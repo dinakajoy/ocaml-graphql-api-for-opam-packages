@@ -1,71 +1,53 @@
-# opam-paackages
+# opam-packages
 
 A short, but powerful statement about your project
 
 ## Setup your development environment
-
-1. (Optional) Create an opam [local switch](https://opam.ocaml.org/blog/opam-20-tips/#Local-switches) by running:
-
-```bash
-make create_switch
-```
-
-_Note: you can ignore this step if you prefer to use the global opam switch._
-
-2. Get all dependencies:
+1. Get all dependencies:
 
 ```bash
-make dev
+make install
 ```
 
-3. Build and start a local server:
+2. Build out the application:
 
 ```bash
-make start
+make build
 ```
-
-### Running Tests
-
-This project uses Jest as a test framework. You can run the tests of the project with:
-
-```bash
-yarn test
-# Or
-npm run test
-```
+This will output the compiled files in `_build/`.
 
 ### Creating production builds
 
 To create a production build of the application, you can run:
 
+For Server ->
 ```bash
-yarn build
-# Or
-npm run build
+run-server:
 ```
 
-This will output the compiled files in `build/`.
+For User Interface ->
+Open another cli
+```bash
+run-client
+```
 
 ### Repository Structure
 
-The following snippet describes JSOO React's repository structure.
+The following snippet describes opam-packages repository structure.
 
 ```text
 .
-├── config/
-|   Configuration files used to build the project, such as the webpack configuration.
-│
-├── public/
+├── dist/
 |   Static assets that you want to include when serving your application.
 │   The content of this folder will get copied to the production build.
 │
-├── src/
-|   Source code of the project application.
+├── server/
+|   Source code of the project application server.
 │
-├── tests/
-|   Unit tests of the project.
+├── client/
+|   Source code of the project application user interface.
 │
-├── LICENSE
+├── Makefile
 │
 ├── package.json
 │

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="shortcut icon" href="./img/favicon.ico" type="image/x-icon">
+    <script type="text/javascript" type="text/javascript" defer="defer" src="./js/main.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <title>Opam Packages</title>
+  </head>
+  <body>
+    <header class="header">
+      <div class="container">
+        <div class="header-wrapper">
+          <div><img src="./img/logo.png" alt="ocaml" class="header-logo" /></div>
+        </div>
+      </div>
+    </header>
+    <main class="main">
+      <section>
+        <div class="container">
+          <h1>Opam Packages</h1>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Version</th>
+              </tr>
+            </thead>
+            <tbody id="opam_packages"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-wrapper">
+          <p>Ocaml &copy <span id="cyear"></span></p>
+        </div>
+      </div>
+    </footer>
+    <noscript>Sorry, you need to enable JavaScript to see this page.</noscript>
+    <script>document.getElementById("cyear").innerHTML = new Date().getFullYear()</script>
+  </body>
+</html>

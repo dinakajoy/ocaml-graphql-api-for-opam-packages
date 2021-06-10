@@ -1,0 +1,7 @@
+(executable
+ (name app)
+ (libraries digestif.c cohttp-lwt-unix graphql-lwt graphql-cohttp ezjsonm))
+
+(alias
+ (name DEFAULT)
+ (deps app.exe))
