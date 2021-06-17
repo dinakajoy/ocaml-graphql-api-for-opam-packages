@@ -1,0 +1,23 @@
+{
+  "name": "opam_packages",
+  "version": "1.0.0",
+  "description": "A short, but powerful statement about your project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dinakajoy/opam-packages.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dinakajoy/opam-packages/issues"
+  },
+  "homepage": "https://github.com/dinakajoy/opam-packages#readme",
+  "dependencies": {
+    "js-search": "^2.0.0"
+  }
+}

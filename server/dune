@@ -1,6 +1,6 @@
 (executable
  (name app)
- (libraries digestif.c cohttp-lwt-unix graphql-lwt graphql-cohttp ezjsonm))
+ (libraries digestif.c cohttp-lwt-unix graphql-lwt graphql-cohttp ezjsonm str))
 
 (alias
  (name DEFAULT)

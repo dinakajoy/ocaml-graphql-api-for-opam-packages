@@ -1,6 +1,6 @@
 (executables
  (names main)
- (libraries js_of_ocaml-lwt ezjsonm brr)
+ (libraries js_of_ocaml-lwt ezjsonm brr note str)
  (modes byte)
  (preprocess
   (pps lwt_ppx js_of_ocaml-ppx)))

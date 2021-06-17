@@ -3,10 +3,17 @@
   <head>
     <link rel="shortcut icon" href="./img/favicon.ico" type="image/x-icon">
     <script type="text/javascript" type="text/javascript" defer="defer" src="./js/main.js"></script>
-    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/styles.css">
     <title>Opam Packages</title>
   </head>
   <body>
+    <!-- <section id="overlay">
+      <div class="loader loader-1">
+        <div class="loader-outter"></div>
+        <div class="loader-inner"></div>
+      </div>
+    </section> -->
+    <div class="content">
     <header class="header">
       <div class="container">
         <div class="header-wrapper">
@@ -15,15 +22,54 @@
       </div>
     </header>
     <main class="main">
+      <section class="fixed">
+        <div class="fixed-data">
+          <span>A</span>
+          <span>B</span>
+          <span>C</span>
+          <span>D</span>
+          <span>E</span>
+          <span>F</span>
+          <span>G</span>
+          <span>H</span>
+          <span>I</span>
+          <span>J</span>
+          <span>K</span>
+          <span>L</span>
+          <span>M</span>
+          <span>N</span>
+          <span>O</span>
+          <span>P</span>
+          <span>Q</span>
+          <span>R</span>
+          <span>S</span>
+          <span>T</span>
+          <span>U</span>
+          <span>V</span>
+          <span>W</span>
+          <span>X</span>
+          <span>Y</span>
+          <span>Z</span>
+        </div>
+      </section>
+
       <section>
         <div class="container">
-          <h1>Opam Packages</h1>
-          <table>
+          <h1 class="title">Opam Packages</h1>
+
+          <div class="filters">
+            <input type="text" name="search" placeholder="Search.." id="filter">
+            <button id="sort_by_title">Sort By Title</button>
+            <button id="sort_by_date">Sort By Date</button>
+          </div>
+
+          <table  id="clear_tbody">
             <thead>
               <tr>
                 <th>#</th>
                 <th>Name</th>
                 <th>Version</th>
+                <th>Updated At</th>
               </tr>
             </thead>
             <tbody id="opam_packages"></tbody>
@@ -38,6 +84,7 @@
         </div>
       </div>
     </footer>
+    </div>
     <noscript>Sorry, you need to enable JavaScript to see this page.</noscript>
     <script>document.getElementById("cyear").innerHTML = new Date().getFullYear()</script>
   </body>

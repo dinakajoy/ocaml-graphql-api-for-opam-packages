@@ -1,0 +1,401 @@
+open Note
+open Brr
+open Brr_io
+open Brr_note
+open Brr_note_kit
+
+(* Model *)
+
+module Package : sig
+  type t
+
+  val v : Jstr.t -> t
+
+  val task : t -> Jstr.t
+
+  val done' : t -> bool
+
+  val with_task : Jstr.t -> t -> t
+
+  val with_done : bool -> t -> t
+
+  val to_json : t -> Json.t
+
+  val of_json : Json.t -> t
+end = struct
+  type t =
+    { task : Jstr.t
+    ; done' : bool
+    }
+
+  let v task = { task; done' = false }
+
+  let task t = t.task
+
+  let done' t = t.done'
+
+  let with_task task t = { t with task }
+
+  let with_done done' t = { t with done' }
+
+  let to_json t = Jv.(obj [| "task", of_jstr t.task; "done", of_bool t.done' |])
+
+  let of_json j = { task = Jv.Jstr.get j "task"; done' = Jv.Bool.get j "done" }
+end
+
+module Packages : sig
+  type t
+
+  val empty : t
+
+  val is_empty : t -> bool
+
+  val to_list : t -> Package.t list
+
+  val count : t -> int
+
+  val add : Package.t -> t -> t
+
+  val rem : Package.t -> t -> t
+
+  val replace : Package.t -> by:Package.t -> t -> t
+
+  val map : (Package.t -> Package.t) -> t -> t
+
+  val fold : (Package.t -> 'a -> 'a) -> t -> 'a -> 'a
+
+  val filter : (Package.t -> bool) -> t -> t
+
+  val for_all : (Package.t -> bool) -> t -> bool
+
+  val exists : (Package.t -> bool) -> t -> bool
+
+  val to_json : t -> Json.t
+
+  val of_json : Json.t -> t
+end = struct
+  type t = Package.t list
+
+  let empty = []
+
+  let is_empty ts = ts = empty
+
+  let to_list ts = ts
+
+  let count ts = List.length ts
+
+  let update upd t ts =
+    let upd t acc = match upd t with None -> acc | Some v -> v :: acc in
+    let rec loop acc = function
+      | [] ->
+        List.rev acc
+      | t' :: ts when t == t' ->
+        List.rev_append (upd t acc) ts
+      | t' :: ts ->
+        loop (t' :: acc) ts
+    in
+    loop [] ts
+
+  let add t ts = t :: ts
+
+  let rem = update (fun _ -> None)
+
+  let replace t ~by = update (fun _ -> Some by) t
+
+  let map f ts = List.(rev @@ rev_map f ts)
+
+  let fold f ts acc = List.fold_left (fun acc t -> f t acc) acc ts
+
+  let filter sat = List.filter sat
+
+  let for_all sat = List.for_all sat
+
+  let exists sat = List.exists sat
+
+  let to_json ts = Jv.of_list Package.to_json ts
+
+  let of_json j = Jv.to_list Package.of_json j
+end
+
+(* Model actions *)
+
+type add_action = [ `Add_package of Jstr.t ]
+
+type bulk_action =
+  [ `All_done of bool
+  | `Rem_done
+  ]
+
+type edit_action =
+  [ `Set_task of Jstr.t * Package.t
+  | `Set_done of bool * Package.t
+  | `Rem_package of Package.t
+  ]
+
+type action =
+  [ add_action
+  | bulk_action
+  | edit_action
+  ]
+
+let do_action : action -> Packages.t -> Packages.t = function
+  | `Add_package task ->
+    Packages.add (Package.v task)
+  | `Set_task (task, package) ->
+    Packages.replace package ~by:(Package.with_task task package)
+  | `Set_done (d, package) ->
+    Packages.replace package ~by:(Package.with_done d package)
+  | `Rem_package package ->
+    Packages.rem package
+  | `All_done d ->
+    Packages.map (Package.with_done d)
+  | `Rem_done ->
+    Packages.filter (fun t -> not (Package.done' t))
+
+(* Persisting FIXME make that versioned (like the old Brr_note_legacy.Store) and
+   easier. *)
+
+let state_key = Jstr.v "brr-packagemvc-state"
+
+let save_state ts =
+  let s = Storage.local G.window in
+  Storage.set_item s state_key (Json.encode (Packages.to_json ts))
+  |> Console.log_if_error ~use:()
+
+let load_state () =
+  let s = Storage.local G.window in
+  match Storage.get_item s state_key with
+  | None ->
+    Packages.empty
+  | Some j ->
+    Result.map Packages.of_json (Json.decode j)
+    |> Console.log_if_error ~use:Packages.empty
+
+(* Rendering & interaction *)
+
+let el_def_display : El.t -> bool signal -> unit =
+  (* Would maybe be better to do this via CSS classes *)
+  let none = Jstr.v "none"
+  and show = Jstr.empty in
+  let bool_to_display = function true -> show | false -> none in
+  fun el bool ->
+    Elr.def_inline_style El.Style.display (S.map bool_to_display bool) el
+
+let add_package : unit -> [> add_action ] event * El.t =
+ fun () ->
+  let p = Jstr.v "What needs to be done ?" in
+  let typ = At.type' (Jstr.v "text") in
+  let at = At.[ typ; class' (Jstr.v "new-package"); autofocus; placeholder p ] in
+  let i = El.input ~at () in
+  let keydown = Ev.keydown in
+  let return = E.filter (Key.equal `Return) (Evr.on_el keydown Key.of_ev i) in
+  let input = E.map (fun _ -> Jstr.trim @@ El.prop El.Prop.value i) return in
+  let add_package =
+    input
+    |> E.filter_map @@ fun v ->
+       match Jstr.is_empty v with true -> None | false -> Some (`Add_package v)
+  in
+  let clear = E.stamp add_package Jstr.empty in
+  let () = Elr.set_prop El.Prop.value i ~on:clear in
+  add_package, i
+
+let toggle_all : set:bool signal -> [> bulk_action ] event * El.t =
+ fun ~set ->
+  let tid = Jstr.v "toggle-all" in
+  let typ = At.type' (Jstr.v "checkbox") in
+  let i = El.input ~at:At.[ typ; class' tid; id tid ] () in
+  let () = Elr.def_prop El.Prop.checked set i in
+  let click = Evr.on_el Ev.click Evr.unit i in
+  let toggle = E.map (fun _ -> `All_done (El.prop El.Prop.checked i)) click in
+  let label = [ El.txt (Jstr.v "Mark all as complete") ] in
+  let label = El.label ~at:At.[ for' tid ] label in
+  toggle, El.div [ i; label ]
+
+let items_left : count:int signal -> El.t =
+ fun ~count ->
+  let count_msg = function
+    | 0 ->
+      Jstr.v "0 items left"
+    | 1 ->
+      Jstr.v "1 item left"
+    | n ->
+      Jstr.(of_int n + v " items left")
+  in
+  let span = El.span ~at:At.[ class' (Jstr.v "package-count") ] [] in
+  let msg = S.map (fun c -> [ El.txt (count_msg c) ]) count in
+  let () = Elr.def_children span msg in
+  span
+
+type filter =
+  [ `All
+  | `Package
+  | `Done
+  ]
+
+let filters : unit -> filter signal * El.t =
+ fun () ->
+  let fragment _ = Uri.fragment (Window.location G.window) in
+  let hashchange =
+    Evr.on_target Ev.hashchange fragment (Window.as_target G.window)
+  in
+  let parse_frag frag =
+    match Jstr.to_string frag with
+    | "/active" ->
+      `Package
+    | "/completed" ->
+      `Done
+    | v ->
+      `All
+  in
+  let init_filter = parse_frag (fragment ()) in
+  let filter_li frag name =
+    let a =
+      El.(a ~at:At.[ href Jstr.(v "#" + frag) ] [ El.txt (Jstr.v name) ])
+    in
+    let sel = parse_frag frag = init_filter in
+    let selected = S.hold sel (E.map (Jstr.equal frag) hashchange) in
+    let () = Elr.def_class (Jstr.v "selected") selected a in
+    El.li [ a ]
+  in
+  let all = filter_li (Jstr.v "/") "All" in
+  let package = filter_li (Jstr.v "/active") "Active" in
+  let done' = filter_li (Jstr.v "/completed") "Completed" in
+  let filter = S.hold init_filter (E.map parse_frag hashchange) in
+  filter, El.ul ~at:At.[ class' (Jstr.v "filters") ] [ all; package; done' ]
+
+let string_editor : Jstr.t -> on:'a event -> bool event * Jstr.t event * El.t =
+ fun s ~on ->
+  let ed = El.input ~at:At.[ class' (Jstr.v "edit"); value s ] () in
+  let keys = Evr.on_el Ev.keydown Key.of_ev ed in
+  let edited = E.filter (Key.equal `Return) keys in
+  let undo = E.filter (Key.equal `Escape) keys in
+  let start_edit = E.stamp on true in
+  let stop_edit = E.stamp (E.select [ edited; undo ]) false in
+  let editing = E.select [ start_edit; stop_edit ] in
+  let str = E.map (fun _ -> El.prop El.Prop.value ed) edited in
+  let () = Elr.set_prop El.Prop.value ~on:(E.map (fun _ -> s) undo) ed in
+  let () = Elr.set_has_focus ~on:start_edit ed in
+  let () = Elr.call (fun _ e -> El.select_text e) ~on:start_edit ed in
+  editing, str, ed
+
+let bool_editor : bool -> bool event * El.t =
+ fun b ->
+  let at = At.[ type' (Jstr.v "checkbox"); class' (Jstr.v "toggle") ] in
+  let at = At.(add_if b checked at) in
+  let el = El.input ~at () in
+  let click = Evr.on_el Ev.click Evr.unit el in
+  let toggle = E.map (fun () -> El.prop El.Prop.checked el) click in
+  toggle, el
+
+let package_item : Package.t -> [> edit_action ] event * El.t =
+ fun package ->
+  let done' = Package.done' package in
+  let task = Package.task package in
+  let set_done, done_editor = bool_editor done' in
+  let set_done = E.map (fun d -> `Set_done (d, package)) set_done in
+  let rem_but = El.button ~at:At.[ class' (Jstr.v "destroy") ] [] in
+  let rem = Evr.on_el Ev.click (Evr.stamp (`Rem_package package)) rem_but in
+  let label = El.label [ El.txt task ] in
+  let editing, edited, ed =
+    string_editor task ~on:(Evr.on_el Ev.dblclick Evr.unit label)
+  in
+  let edit =
+    edited
+    |> E.filter_map @@ fun v ->
+       let v = Jstr.trim v in
+       if Jstr.is_empty v then
+         Some (`Rem_package package)
+       else if not (Jstr.equal v task) then
+         Some (`Set_task (v, package))
+       else
+         None
+  in
+  let div_at = At.[ class' (Jstr.v "view") ] in
+  let div = El.div ~at:div_at [ done_editor; label; rem_but ] in
+  let li_at = At.(add_if done' (class' (Jstr.v "completed")) []) in
+  let li = El.li ~at:li_at [ div; ed ] in
+  let () = Elr.set_class (Jstr.v "editing") editing li in
+  E.select [ edit; rem; set_done ], li
+
+let package_list
+    : Packages.t signal -> filter:filter signal -> [> edit_action ] event * El.t
+  =
+ fun ts ~filter ->
+  let add filter t ((es, is) as acc) =
+    match filter with
+    | `Package when Package.done' t ->
+      acc
+    | `Done when not (Package.done' t) ->
+      acc
+    | _ ->
+      let e, i = package_item t in
+      e :: es, i :: is
+  in
+  let add_packages ts filter = Packages.fold (add filter) ts ([], []) in
+  let items = S.l2 ~eq:( == ) add_packages ts filter in
+  let act = E.swap @@ S.map ~eq:( == ) (fun (evs, _) -> E.select evs) items in
+  let items = S.map snd items in
+  let ul = El.ul ~at:At.[ class' (Jstr.v "package-list") ] [] in
+  let () = Elr.def_children ul items in
+  act, ul
+
+let header () =
+  let add, field = add_package () in
+  let at = At.[ class' (Jstr.v "header") ] in
+  add, El.header ~at [ El.h1 [ El.txt (Jstr.v "packages") ]; field ]
+
+let footer ~packages =
+  let is_package t = not (Package.done' t) in
+  let has_done = S.map (Packages.exists Package.done') packages in
+  let package_left ts = List.(length @@ filter is_package (Packages.to_list ts)) in
+  let left_el = items_left ~count:(S.map package_left packages) in
+  let filter, fs_el = filters () in
+  let rem_done, rem_el =
+    let at = At.[ class' (Jstr.v "clear-completed") ] in
+    let b = El.button ~at [ El.txt (Jstr.v "Clear completed") ] in
+    let () = el_def_display b has_done in
+    let rem_done = Evr.on_el Ev.click (Evr.stamp `Rem_done) b in
+    rem_done, b
+  in
+  let at = At.[ class' (Jstr.v "footer") ] in
+  let ft = El.footer ~at [ left_el; fs_el; rem_el ] in
+  let display ts = not @@ Packages.is_empty ts in
+  let () = el_def_display ft (S.map display packages) in
+  filter, rem_done, ft
+
+let main ~add_package ~rem_done ~packages ~filter =
+  let toggle_set =
+    packages
+    |> S.map @@ fun ts -> Packages.((not (is_empty ts)) && for_all Package.done' ts)
+  in
+  let toggle_all, toggle_el = toggle_all toggle_set in
+  let edit, items = package_list packages ~filter in
+  let at = At.[ class' (Jstr.v "main") ] in
+  let sec = El.section ~at [ toggle_el; items ] in
+  let display ts = not @@ Packages.is_empty ts in
+  let () = el_def_display sec (S.map display packages) in
+  E.select [ add_package; rem_done; edit; toggle_all ], sec
+
+let ui : packages:Packages.t -> Packages.t signal * El.t list =
+ fun ~packages ->
+  let def packages =
+    let add_package, header = header () in
+    let filter, rem_done, footer = footer ~packages in
+    let action, main = main ~add_package ~rem_done ~packages ~filter in
+    let do_action = E.map do_action action in
+    let packages' = S.accum (S.value packages) do_action in
+    packages', (packages', [ header; main; footer ])
+  in
+  S.fix packages def
+
+let main () =
+  let id = Jstr.v "opam_packages" in
+  match Document.find_el_by_id G.document id with
+  | None ->
+    Console.(error [ str "No element with id '%s' found"; id ])
+  | Some el ->
+    let packages, children = ui ~packages:(load_state ()) in
+    Logr.(hold @@ S.log packages save_state);
+    El.set_children el children
+
+let () = main ()
