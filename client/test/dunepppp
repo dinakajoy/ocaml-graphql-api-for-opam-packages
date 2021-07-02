@@ -1,0 +1,15 @@
+(executables
+ (names test)
+ (libraries js_of_ocaml-lwt ezjsonm brr str)
+ (modes byte)
+ (preprocess
+  (pps lwt_ppx js_of_ocaml-ppx)))
+
+(rule
+ (targets test.js)
+ (action
+  (run %{bin:js_of_ocaml} --source-map %{dep:test.bc} -o %{targets} --pretty)))
+
+(alias
+ (name default)
+ (deps test.js))

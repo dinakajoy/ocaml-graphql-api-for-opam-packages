@@ -49,6 +49,16 @@ let create_new_tbody () =
   Dom.replaceChild table tbody tfoot
 
 let display_pkgs { id; name; version; updatedAt } =
+  let loader =
+    Js.Opt.get
+      (Html.document##getElementById (Js.string "overlay"))
+      (fun () -> assert false)
+  in
+  let content =
+    Js.Opt.get
+      (Html.document##getElementById (Js.string "content"))
+      (fun () -> assert false)
+  in
   let tbody =
     Js.Opt.get
       (Html.document##getElementById (Js.string "opam_packages"))
@@ -67,7 +77,9 @@ let display_pkgs { id; name; version; updatedAt } =
   let td4 = Html.(createTd document) in
   td4##.innerHTML := Js.string updatedAt;
   Dom.appendChild tr td4;
-  Dom.appendChild tbody tr
+  Dom.appendChild tbody tr;
+  loader##.style##.display := Js.string "none";
+  content##.style##.display := Js.string "block"
 
 let get_string key l =
   match List.assoc key l with `String s -> s | _ -> raise Not_found
@@ -76,8 +88,8 @@ let formatPackages ?(filter = "sort_by_title") packages =
   match packages with
   | Some packages ->
     (try
-       let pkgs = Jstr.to_string (Json.encode packages) in
-       let json = Ezjsonm.from_string pkgs in
+       let packages = Jstr.to_string (Json.encode packages) in
+       let json = Ezjsonm.from_string packages in
        let json = Ezjsonm.find json [ "data"; "packages" ] in
        match json with
        | `A pkgs ->
@@ -105,12 +117,12 @@ let formatPackages ?(filter = "sort_by_title") packages =
          else
            List.iter display_pkgs (List.rev (List.fold_left add_pkg [] pkgs))
        | _ ->
-         Console.log [ Jstr.of_string pkgs ]
+         Console.log [ Js.string packages ]
      with
     | e ->
-      Console.error [ Jstr.of_string ("Package Error" ^ Printexc.to_string e) ])
+      Console.error [ Js.string ("Package Error" ^ Printexc.to_string e) ])
   | None ->
-    Console.error [ Jstr.of_string "There was an error" ]
+    Console.error [ Js.string "There was an error" ]
 
 let sort_by_title _ =
   remove_old_tbody ();
@@ -125,8 +137,7 @@ let sort_by_date _ =
   Js._false
 
 let search_handler data packages =
-  let search_data = Jstr.lowercased data in
-  (* let search_data = data##toLowerCase in *)
+  let search_data = Jstr.lowercased (Jstr.of_string data) in
   remove_old_tbody ();
   create_new_tbody ();
   match packages with
@@ -134,7 +145,7 @@ let search_handler data packages =
     (try
        let pkgs = Jstr.to_string (Json.encode packages) in
        let json = Ezjsonm.from_string pkgs in
-       let json = Ezjsonm.find json [ "data"; "packages" ] in
+       let json = Ezjsonm.find json [ "data"; "allPackages" ] in
        match json with
        | `A pkgs ->
          let add_pkg l = function
@@ -161,12 +172,12 @@ let search_handler data packages =
          in
          List.iter display_pkgs (List.rev (List.fold_left add_pkg [] pkgs))
        | _ ->
-         Console.log [ Jstr.of_string pkgs ]
+         Console.log [ Js.string pkgs ]
      with
     | e ->
-      Console.error [ Jstr.of_string ("Package Error" ^ Printexc.to_string e) ])
+      Console.error [ Js.string ("Package Error" ^ Printexc.to_string e) ])
   | None ->
-    Console.error [ Jstr.of_string "There was an error" ]
+    Console.error [ Js.string "There was an error" ]
 
 let get_packages_response_data response =
   let* data = Fetch.Body.json (Fetch.Response.as_body response) in
@@ -211,8 +222,6 @@ let package_query =
   in
   Ezjsonm.value_to_string (`O [ "query", `String query ])
 
-(* G.set_timeout ~ms:3000 (fun () -> assert false) *)
-
 let start _ =
   let url = "http://localhost:8080/graphql" in
   let result = get_packages url package_query in
@@ -237,9 +246,8 @@ let start _ =
   searchFilter##.onkeyup :=
     Html.handler (fun v ->
         Js.Opt.iter v##.target (fun t ->
-            Js.Opt.iter (Dom_html.CoerceTo.input t) (fun t ->
-                search_handler (Jstr.of_string(Js.to_string t##.value)) !packages_holder));
-        (* Firebug.console##log t##.value *)
+            Js.Opt.iter (Html.CoerceTo.input t) (fun t ->
+                search_handler (Js.to_string t##.value) !packages_holder));
         Js._true);
   Js._false
 

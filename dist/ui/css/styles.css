@@ -160,9 +160,9 @@ input[type=text]:focus {
 }
 
 /* Loader */
-/* .content {
+#content {
   display: none;
-} */
+}
 #overlay {
   position: fixed;
   height: 100%;

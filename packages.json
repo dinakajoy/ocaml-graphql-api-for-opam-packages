@@ -1,24 +1,328 @@
 [
-  { "id": "vfr", "name": "ocaml", "version": "3.2.0", "updatedAt": "11-03-20" },
-  { "id": "dfr", "name": "merlin", "version": "1.4.2", "updatedAt": "02-01-20" },
-  { "id": "ert", "name": "dune", "version": "1.2.0", "updatedAt": "05-01-21" },
-  { "id": "esd", "name": "ocaml-lsp", "version": "2.0.0", "updatedAt": "12-11-19" },
-  { "id": "dfr", "name": "dartin", "version": "1.4.2", "updatedAt": "18-08-21" },
-  { "id": "vgf", "name": "graph-lsp", "version": "2.0.0", "updatedAt": "03-02-21" },
-  { "id": "vfr", "name": "rss", "version": "3.2.0", "updatedAt": "14-10-21" },
-  { "id": "vfr", "name": "brr", "version": "3.2.0", "updatedAt": "15-12-21" },
-  { "id": "esd", "name": "ocaml-lwt", "version": "2.0.0", "updatedAt": "16-03-21" },
-  { "id": "hju", "name": "js_of_ocaml", "version": "2.0.0", "updatedAt": "18-01-20" },
-  { "id": "wer", "name": "make", "version": "2.0.0", "updatedAt": "22-01-21" },
-  { "id": "dfr", "name": "anter", "version": "1.4.2", "updatedAt": "12-03-20" },
-  { "id": "dfr", "name": "gillin", "version": "1.4.2", "updatedAt": "31-08-20" },
-  { "id": "dfr", "name": "zac", "version": "1.4.2", "updatedAt": "12-03-21" },
-  { "id": "dfr", "name": "sunde", "version": "1.4.2", "updatedAt": "02-03-21" },
-  { "id": "vfr", "name": "caml", "version": "3.2.0", "updatedAt": "12-04-21" },
-  { "id": "vfr", "name": "xur", "version": "3.2.0", "updatedAt": "08-01-21" },
-  { "id": "vfr", "name": "bent", "version": "3.2.0", "updatedAt": "19-05-21" },
-  { "id": "vfr", "name": "npm", "version": "3.2.0", "updatedAt": "24-01-21" },
-  { "id": "dfr", "name": "oklin", "version": "1.4.2", "updatedAt": "10-01-21" },
-  { "id": "dfr", "name": "izen", "version": "1.4.2", "updatedAt": "12-01-19" },
-  { "id": "vfr", "name": "yaml", "version": "3.2.0", "updatedAt": "20-03-20" }
+  {
+    "id": "one",
+    "name": "ocaml",
+    "version": "3.2.0",
+    "updatedAt": "11-03-20",
+    "dependsOn": [
+      {
+        "packageName": "ttwo"
+      },
+      {
+        "packageName": "brr"
+      },
+      {
+        "packageName": "sixteen"
+      }
+    ]
+  },
+  {
+    "id": "two",
+    "name": "merlin",
+    "version": "1.4.2",
+    "updatedAt": "02-01-20",
+    "dependsOn": [
+      {
+        "packageName": "merlin"
+      }
+    ]
+  },
+  {
+    "id": "three",
+    "name": "dune",
+    "version": "1.2.0",
+    "updatedAt": "05-01-21",
+    "dependsOn": [
+      {
+        "packageName": "brr"
+      },
+      {
+        "packageName": "twenty"
+      }
+    ]
+  },
+  {
+    "id": "four",
+    "name": "ocaml-lsp",
+    "version": "2.0.0",
+    "updatedAt": "12-11-19",
+    "dependsOn": [
+      {
+        "packageName": "four"
+      },
+      {
+        "packageName": "twelve"
+      },
+      {
+        "packageName": "sixteen"
+      }
+    ]
+  },
+  {
+    "id": "five",
+    "name": "dartin",
+    "version": "1.4.2",
+    "updatedAt": "18-08-21",
+    "dependsOn": [
+      {
+        "packageName": "merlin"
+      },
+      {
+        "packageName": "nineteen"
+      }
+    ]
+  },
+  {
+    "id": "six",
+    "name": "graph-lsp",
+    "version": "2.0.0",
+    "updatedAt": "03-02-21",
+    "dependsOn": [
+      {
+        "packageName": "five"
+      },
+      {
+        "packageName": "nine"
+      },
+      {
+        "packageName": "eightteen"
+      }
+    ]
+  },
+  {
+    "id": "seven",
+    "name": "rss",
+    "version": "3.2.0",
+    "updatedAt": "14-10-21",
+    "dependsOn": [
+      {
+        "packageName": "ten"
+      },
+      {
+        "packageName": "merlin"
+      }
+    ]
+  },
+  {
+    "id": "eight",
+    "name": "brr",
+    "version": "3.2.0",
+    "updatedAt": "15-12-21",
+    "dependsOn": [
+      {
+        "packageName": "three"
+      },
+      {
+        "packageName": "twelve"
+      },
+      {
+        "packageName": "sixteen"
+      }
+    ]
+  },
+  {
+    "id": "nine",
+    "name": "ocaml-lwt",
+    "version": "2.0.0",
+    "updatedAt": "16-03-21",
+    "dependsOn": [
+      {
+        "packageName": "ttwo"
+      }
+    ]
+  },
+  {
+    "id": "ten",
+    "name": "js_of_ocaml",
+    "version": "2.0.0",
+    "updatedAt": "18-01-20",
+    "dependsOn": [
+      {
+        "packageName": "eightteen"
+      },
+      {
+        "packageName": "three"
+      }
+    ]
+  },
+  {
+    "id": "eleven",
+    "name": "make",
+    "version": "2.0.0",
+    "updatedAt": "22-01-21",
+    "dependsOn": [
+      {
+        "packageName": "ttwo"
+      },
+      {
+        "packageName": "eleven"
+      },
+      {
+        "packageName": "sixteen"
+      }
+    ]
+  },
+  {
+    "id": "twelve",
+    "name": "anter",
+    "version": "1.4.2",
+    "updatedAt": "12-03-20",
+    "dependsOn": [
+      {
+        "packageName": "thirteen"
+      },
+      {
+        "packageName": "two"
+      },
+      {
+        "packageName": "nineteen"
+      }
+    ]
+  },
+  {
+    "id": "thirteen",
+    "name": "gillin",
+    "version": "1.4.2",
+    "updatedAt": "31-08-20",
+    "dependsOn": [
+      {
+        "packageName": "one"
+      }
+    ]
+  },
+  {
+    "id": "fourteen",
+    "name": "zac",
+    "version": "1.4.2",
+    "updatedAt": "12-03-21",
+    "dependsOn": [
+      {
+        "packageName": "four"
+      },
+      {
+        "packageName": "nine"
+      },
+      {
+        "packageName": "five"
+      }
+    ]
+  },
+  {
+    "id": "fifteen",
+    "name": "sunde",
+    "version": "1.4.2",
+    "updatedAt": "02-03-21",
+    "dependsOn": [
+      {
+        "packageName": "eight"
+      },
+      {
+        "packageName": "twelve"
+      },
+      {
+        "packageName": "sixteen"
+      }
+    ]
+  },
+  {
+    "id": "sixteen",
+    "name": "caml",
+    "version": "3.2.0",
+    "updatedAt": "12-04-21",
+    "dependsOn": [
+      {
+        "packageName": "sixteen"
+      }
+    ]
+  },
+  {
+    "id": "seventeen",
+    "name": "xur",
+    "version": "3.2.0",
+    "updatedAt": "08-01-21",
+    "dependsOn": [
+      {
+        "packageName": "ten"
+      },
+      {
+        "packageName": "twelve"
+      },
+      {
+        "packageName": "sixteen"
+      }
+    ]
+  },
+  {
+    "id": "eightteen",
+    "name": "bent",
+    "version": "3.2.0",
+    "updatedAt": "19-05-21",
+    "dependsOn": [
+      {
+        "packageName": "ttwo"
+      },
+      {
+        "packageName": "sixteen"
+      }
+    ]
+  },
+  {
+    "id": "nineteen",
+    "name": "npm",
+    "version": "3.2.0",
+    "updatedAt": "24-01-21",
+    "dependsOn": [
+      {
+        "packageName": "ttwo"
+      },
+      {
+        "packageName": "five"
+      },
+      {
+        "packageName": "sixteen"
+      }
+    ]
+  },
+  {
+    "id": "twenty",
+    "name": "oklin",
+    "version": "1.4.2",
+    "updatedAt": "10-01-21",
+    "dependsOn": [
+      {
+        "packageName": "thirteen"
+      }
+    ]
+  },
+  {
+    "id": "tone",
+    "name": "izen",
+    "version": "1.4.2",
+    "updatedAt": "12-01-19",
+    "dependsOn": [
+      {
+        "packageName": "one"
+      },
+      {
+        "packageName": "sixteen"
+      }
+    ]
+  },
+  {
+    "id": "ttwo",
+    "name": "yaml",
+    "version": "3.2.0",
+    "updatedAt": "20-03-20",
+    "dependsOn": [
+      {
+        "packageName": "two"
+      },
+      {
+        "packageName": "eight"
+      },
+      {
+        "packageName": "brr"
+      }
+    ]
+  }
 ]
