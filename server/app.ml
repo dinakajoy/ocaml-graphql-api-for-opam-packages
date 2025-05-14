@@ -16,18 +16,18 @@ type package =
   }
 
 (* Sort packages in ascending order by name *)
-  let compare_by_names n1 n2 =
+(* let compare_by_names n1 n2 =
   let compare_names s1 s2 = compare s1 s2 in
-  compare_names n1.name n2.name
+  compare_names n1.name n2.name *)
 
 (* Sort packages in ascending order by date *)
-  let compare_by_dates n1 n2 =
+let compare_by_dates n1 n2 =
   let date str = List.rev Str.(split (regexp "-") str) in
   let compare_dates s1 s2 = compare (date s1) (date s2) in
   compare_dates n1.updatedAt n2.updatedAt
 
 (* Filter packages and return packages with name that contains search query *)
-  let starts_with s1 s2 =
+let starts_with s1 s2 =
   let len1 = String.length s1 in
   if len1 > String.length s2 then
     false
@@ -92,8 +92,8 @@ let readAllPackages () =
   close_in pkg_file;
   json
 
-let get_string key l =
-  match List.assoc key l with `String s -> s | _ -> raise Not_found
+(* let get_string key l =
+  match List.assoc key l with `String s -> s | _ -> raise Not_found *)
 
 (* let getAllPackagesWithDependencies pkgs =
   match pkgs with |
@@ -109,51 +109,48 @@ let allPackages =
   let packages = getAllPackages packages in
   match packages with Ok packages -> packages | Error (`Msg m) -> failwith m
 
-let dependency =
-  Schema.(
-    obj "package" ~fields:(fun _ ->
-        [ field
-            "packageName"
-            ~doc:"All packages that a package is dependent on"
-            ~args:Arg.[]
-            ~typ:(non_null string)
-            ~resolve:(fun _ p -> p.packageName)
-        ]))
+let dependency = Schema.(obj "dependency"
+~doc:"A user in the system"
+~fields:[
+  field "packageName"
+    ~doc:"All packages that a package is dependent on"
+    ~args:Arg.[]
+    ~typ:(non_null string)
+    ~resolve:(fun _ p -> p.packageName)
+  ])
 
-let package =
-  Schema.(
-    obj "package" ~fields:(fun _ ->
-        [ field
-            "id"
-            ~doc:"Unique package identifier"
-            ~args:Arg.[]
-            ~typ:(non_null string)
-            ~resolve:(fun _ p -> p.id)
-        ; field
-            "name"
-            ~doc:"Unique package name"
-            ~args:Arg.[]
-            ~typ:(non_null string)
-            ~resolve:(fun _ p -> p.name)
-        ; field
-            "version"
-            ~doc:"Package latest release version"
-            ~args:Arg.[]
-            ~typ:(non_null string)
-            ~resolve:(fun _ p -> p.version)
-        ; field
-            "updatedAt"
-            ~doc:"Package latest update date"
-            ~args:Arg.[]
-            ~typ:(non_null string)
-            ~resolve:(fun _ p -> p.updatedAt)
-        ; field
-            "dependsOn"
-            ~doc:"Package dependencies"
-            ~args:Arg.[]
-            ~typ:(non_null (list (non_null dependency)))
-            ~resolve:(fun _ p -> p.dependsOn)
-        ]))
+let package = Schema.(obj "package" 
+  ~fields:[ 
+    field "id"
+      ~doc:"Unique package identifier"
+      ~args:Arg.[]
+      ~typ:(non_null string)
+      ~resolve:(fun _ p -> p.id)
+    ;
+    field "name"
+      ~doc:"Unique package name"
+      ~args:Arg.[]
+      ~typ:(non_null string)
+      ~resolve:(fun _ p -> p.name)
+    ;
+    field "version"
+      ~doc:"Package latest release version"
+      ~args:Arg.[]
+      ~typ:(non_null string)
+      ~resolve:(fun _ p -> p.version)
+    ;
+    field "updatedAt"
+      ~doc:"Package latest update date"
+      ~args:Arg.[]
+      ~typ:(non_null string)
+      ~resolve:(fun _ p -> p.updatedAt)
+    ;
+    field "dependsOn"
+      ~doc:"Package dependencies"
+      ~args:Arg.[]
+      ~typ:(non_null (list (non_null dependency)))
+      ~resolve:(fun _ p -> p.dependsOn)
+    ])
 
 let schema =
   Schema.(
@@ -164,12 +161,12 @@ let schema =
           ~args:
             Arg.
               [ arg'
+                  "filter"
                   ~doc:
                     "Filter packages in asc by name or date or based on search \
                      query"
-                  "filter"
                   ~typ:string
-                  ~default:"sortByName"
+                  ~default:(`String "sortByName")
               ]
           ~resolve:(fun _filter () filter ->
             if filter = "sortByDate" then

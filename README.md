@@ -10,7 +10,7 @@ make install
 ```
 
 2. Build out the application:
-
+      
 ```bash
 make build
 ```

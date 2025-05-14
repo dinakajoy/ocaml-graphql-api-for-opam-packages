@@ -1,6 +1,5 @@
 install:
-	opam install opampackages-server --deps-only
-	opam install opampackages-client --deps-only
+	opam install . --deps-only
 
 build:
 	dune build
@@ -8,8 +7,8 @@ build:
 run-client:
 	rm -rf dist/ui/js
 	mkdir -p dist/ui/js
-	cp _build/default/client/main.js dist/ui/js/main.js
-	open-cli ./dist/index.html --google chrome
+	cp _build/default/client/main.bc.js dist/ui/js/main.js
+	xdg-open ./dist/ui/index.html
 
 run-server:
 	rm -rf dist/server
