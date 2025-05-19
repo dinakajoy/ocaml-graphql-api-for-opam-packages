@@ -31,6 +31,8 @@ Open another cli
 run-client
 ```
 
+<img src="./opam-packages.gif" alt="Demo">
+
 ### Repository Structure
 
 The following snippet describes opam-packages repository structure.
