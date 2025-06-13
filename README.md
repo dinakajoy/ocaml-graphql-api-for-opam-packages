@@ -1,6 +1,7 @@
-# opam-packages
+# simple_ocaml_graphql_api_server
 
-A short, but powerful statement about your project
+A simple OCaml GraphQL API using `graphql-cohttp` that reads and returns json files of list of packages simulating Opam packages
+
 
 ## Setup your development environment
 1. Get all dependencies:
